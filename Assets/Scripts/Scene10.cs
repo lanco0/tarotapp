@@ -2,12 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class Scene10 : MonoBehaviour
 {
-    [SerializeField] List<Sprite> card_Img;
-    [SerializeField] SpriteRenderer[] card_Slot;
+    [SerializeField] List<TarotCard> cards; // List of tarot cards with images and comments
+    [SerializeField] SpriteRenderer[] card_Slot; // Array of sprite renderers for card slots
+    [SerializeField] Text card_Comments; // Single UI Text component for all card comments
+    [SerializeField] Button backButton; // Button for going back to the main scene
+    [SerializeField] Button drawButton; // Button for drawing new cards
     Animator animator;
 
     // Start is called before the first frame update
@@ -15,25 +18,19 @@ public class Scene10 : MonoBehaviour
     {
         Screen.orientation = ScreenOrientation.AutoRotation;
         animator = GetComponent<Animator>();
-        Invoke("PlayStartAnim", .2f);
+        Invoke("PlayStartAnim", 0.2f);
+
+        // Assign button click listeners
+        backButton.onClick.AddListener(() => SceneManager.LoadScene("SampleScene"));
+        drawButton.onClick.AddListener(() => Shuffle_Cards());
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        // Empty update method; consider removing if not used later
     }
 
-    private void OnEnable()
-    {
-        VisualElement root = GetComponent<UIDocument>().rootVisualElement;
-        Button back = root.Q<Button>("Back");
-        Button draw = root.Q<Button>("draw");
-
-        back.clicked += () => SceneManager.LoadScene(sceneName: "SampleScene");
-        //draw.clicked += () => ShuffleCards();
-    }
-    
     public void Shuffle_Cards()
     {
         StartCoroutine(ResetAnim());
@@ -48,31 +45,30 @@ public class Scene10 : MonoBehaviour
     IEnumerator ResetAnim()
     {
         animator.Play("Reset");
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(2f); // Adjust the wait time according to the reset animation duration
         animator.Play("Shuffle");
         ShuffleCards();
-
     }
 
     void ShuffleCards()
     {
-        
+        HashSet<int> usedIndices = new HashSet<int>();
+        string combinedComments = "";
+
         for (int i = 0; i < card_Slot.Length; i++)
         {
-            List<int> list = new List<int>();
-            int Rand = 0;
-            list = new List<int>(new int[card_Img.Count]);
-
-            for (int j = 1; j < card_Img.Count; j++)
+            int rand;
+            do
             {
-                Rand = Random.Range(0, card_Img.Count);
+                rand = Random.Range(0, cards.Count);
+            } while (usedIndices.Contains(rand));
 
-                while (list.Contains(Rand))
-                {
-                    Rand = Random.Range(0, card_Img.Count);
-                }
-            }
-            card_Slot[i].sprite = card_Img[Rand];
+            usedIndices.Add(rand);
+
+            card_Slot[i].sprite = cards[rand].image;
+            combinedComments += cards[rand].comment + "\n"; // Combine comments with newline
         }
+
+        card_Comments.text = combinedComments; // Set the combined comments to the single Text component
     }
 }
