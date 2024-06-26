@@ -19,36 +19,20 @@ public class Scene3 : MonoBehaviour
     [SerializeField] Button backButton; // Button for going back to the main scene
     [SerializeField] Button drawButton; // Button for drawing new cards
 
-    Animator animator;
-
     // Start is called before the first frame update
     void Start()
     {
         Screen.orientation = ScreenOrientation.AutoRotation;
-        animator = GetComponent<Animator>();
-        Invoke("PlayStartAnim", 0.2f);
 
         // Assign button click listeners
         backButton.onClick.AddListener(() => SceneManager.LoadScene("SampleScene"));
         drawButton.onClick.AddListener(() => Shuffle_Cards());
+
+        ShuffleCards();
     }
 
     public void Shuffle_Cards()
     {
-        StartCoroutine(ResetAnim());
-    }
-
-    void PlayStartAnim()
-    {
-        animator.Play("Shuffle");
-        ShuffleCards();
-    }
-
-    IEnumerator ResetAnim()
-    {
-        animator.Play("Reset");
-        yield return new WaitForSeconds(2f); // Adjust the wait time according to the reset animation duration
-        animator.Play("Shuffle");
         ShuffleCards();
     }
 
